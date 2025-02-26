@@ -21,19 +21,24 @@
     
     <div id="activities"></div>
     
-    <script>
+    <script type="module">
+        // Importa as funções necessárias do SDK do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
             authDomain: "diario-escolar-97964.firebaseapp.com",
             databaseURL: "https://diario-escolar-97964-default-rtdb.firebaseio.com",
             projectId: "diario-escolar-97964",
-            storageBucket: "diario-escolar-97964.firebasestorage.app",
+            storageBucket: "diario-escolar-97964.appspot.com",
             messagingSenderId: "720716760516",
             appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
         };
 
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         function addActivity() {
             const title = document.getElementById("title").value;
@@ -41,12 +46,18 @@
             const date = document.getElementById("date").value;
             
             if (title && description && date) {
-                const newActivityRef = db.ref("activities").push();
-                newActivityRef.set({ title, description, date });
+                const newActivityRef = push(ref(db, 'activities'));
+                set(newActivityRef, {
+                    title: title,
+                    description: description,
+                    date: date
+                });
             }
         }
 
-        db.ref("activities").on("value", (snapshot) => {
+        // Escuta as mudanças no banco de dados e exibe as atividades
+        const activitiesRef = ref(db, 'activities');
+        onValue(activitiesRef, (snapshot) => {
             const activitiesDiv = document.getElementById("activities");
             activitiesDiv.innerHTML = "";
             snapshot.forEach((childSnapshot) => {
