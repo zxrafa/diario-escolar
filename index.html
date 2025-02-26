@@ -77,8 +77,8 @@
     };
 
     // Inicializando o Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database(); // Mover a inicialização do db para depois da inicialização do app
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();  // Inicialize o db após a inicialização do Firebase
 
     // Função para adicionar atividade
     function adicionarAtividade() {
