@@ -1,11 +1,11 @@
 // Configuração do Firebase
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_STORAGE_BUCKET",
-  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
+  authDomain: "diario-escolar-97964.firebaseapp.com",
+  projectId: "diario-escolar-97964",
+  storageBucket: "diario-escolar-97964.appspot.com",
+  messagingSenderId: "720716760516",
+  appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
 };
 
 // Inicializando o Firebase
