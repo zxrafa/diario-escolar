@@ -7,7 +7,6 @@
   <!-- Firebase JS SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
 
   <style>
     body {
@@ -77,9 +76,9 @@
       appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
     };
 
-    // Inicializando Firebase
+    // Inicializando o Firebase
     const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const db = firebase.database(); // Mover a inicialização do db para depois da inicialização do app
 
     // Função para adicionar atividade
     function adicionarAtividade() {
@@ -94,29 +93,34 @@
           dataEntrega: dataEntrega
         };
 
-        // Enviar a nova atividade para o Firebase
+        // Adicionando a nova atividade no Firebase
         const atividadesRef = db.ref('atividades');
-        atividadesRef.push(novaAtividade, (error) => {
-          if (error) {
-            console.log('Erro ao adicionar a atividade: ', error);
-          } else {
+        atividadesRef.push(novaAtividade)
+          .then(() => {
             console.log('Atividade adicionada com sucesso!');
-          }
-        });
-
-        // Limpar os campos após adicionar
-        document.getElementById('titulo').value = '';
-        document.getElementById('descricao').value = '';
-        document.getElementById('dataEntrega').value = '';
+            alert('Atividade adicionada com sucesso!');
+            limparCampos();
+          })
+          .catch((error) => {
+            console.log('Erro ao adicionar a atividade: ', error);
+            alert('Erro ao adicionar a atividade.');
+          });
       } else {
         alert('Por favor, preencha todos os campos.');
       }
     }
 
+    // Função para limpar os campos após adicionar a atividade
+    function limparCampos() {
+      document.getElementById('titulo').value = '';
+      document.getElementById('descricao').value = '';
+      document.getElementById('dataEntrega').value = '';
+    }
+
     // Função para exibir atividades
     function mostrarAtividades() {
       const atividadesRef = db.ref('atividades');
-      atividadesRef.on('child_added', function(snapshot) {
+      atividadesRef.on('child_added', (snapshot) => {
         const atividade = snapshot.val();
         const atividadesContainer = document.getElementById('atividadesContainer');
         
