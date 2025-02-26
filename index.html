@@ -1,110 +1,31 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diário Escolar Virtual</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            text-align: center;
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-        input, textarea, button {
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .task {
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .delete {
-            background-color: #dc3545;
-            color: white;
-            padding: 5px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .delete:hover {
-            background-color: #c82333;
-        }
-    </style>
+    <!-- ... -->
 </head>
 <body>
-
-    <h1>Diário Escolar Virtual</h1>
-    <div class="container">
-        <h3>Nova Atividade</h3>
-        <input type="text" id="titulo" placeholder="Título da Atividade">
-        <textarea id="descricao" placeholder="Descrição"></textarea>
-        <input type="date" id="data">
-        <button onclick="adicionarTarefa()">Adicionar</button>
-
-        <h3>Atividades</h3>
-        <div id="listaTarefas"></div>
-    </div>
-
+    <!-- ... -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
     <script>
-        // 🔥 CONFIGURAÇÃO DO FIREBASE (substitua pelos seus dados)
         const firebaseConfig = {
-            apiKey: "sua-chave",
-            authDomain: "seu-dominio.firebaseapp.com",
-            projectId: "seu-projeto-id",
-            storageBucket: "seu-bucket.appspot.com",
-            messagingSenderId: "seu-id-de-envio",
-            appId: "seu-id"
+            apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
+            authDomain: "diario-escolar-97964.firebaseapp.com",
+            projectId: "diario-escolar-97964",
+            storageBucket: "diario-escolar-97964.firebasestorage.app",
+            messagingSenderId: "720716760516",
+            appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
         };
 
-        // Inicializando o Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const database = firebase.database();
 
-        // Função para carregar as tarefas
         function carregarTarefas() {
-            let lista = document.getElementById("listaTarefas");
-            lista.innerHTML = ""; // Limpar a lista antes de exibir as novas tarefas
-
-            db.collection("tarefas").get().then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                    console.log("Nenhuma tarefa encontrada.");
-                }
-
-                querySnapshot.forEach((doc) => {
-                    let tarefa = doc.data();
+            database.ref('tarefas').on('value', (snapshot) => {
+                let tarefas = snapshot.val() || [];
+                let lista = document.getElementById("listaTarefas");
+                lista.innerHTML = "";
+                tarefas.forEach((tarefa, index) => {
                     lista.innerHTML += `
                         <div class="task">
                             <div>
@@ -112,16 +33,13 @@
                                 ${tarefa.descricao}<br>
                                 <small>Entrega: ${tarefa.data}</small>
                             </div>
-                            <button class="delete" onclick="removerTarefa('${doc.id}')">X</button>
+                            <button class="delete" onclick="removerTarefa(${index})">X</button>
                         </div>
                     `;
                 });
-            }).catch((error) => {
-                console.error("Erro ao carregar tarefas: ", error);
             });
         }
 
-        // Função para adicionar uma tarefa
         function adicionarTarefa() {
             let titulo = document.getElementById("titulo").value;
             let descricao = document.getElementById("descricao").value;
@@ -132,30 +50,23 @@
                 return;
             }
 
-            // Salvar a tarefa no Firebase
-            db.collection("tarefas").add({ titulo, descricao, data }).then(() => {
-                console.log("Tarefa adicionada:", { titulo, descricao, data });
-                document.getElementById("titulo").value = "";
-                document.getElementById("descricao").value = "";
-                document.getElementById("data").value = "";
-                carregarTarefas(); // Carregar as tarefas novamente após adicionar
-            }).catch((error) => {
-                console.error("Erro ao adicionar tarefa: ", error);
+            let tarefa = { titulo, descricao, data };
+            database.ref('tarefas').push(tarefa);
+
+            document.getElementById("titulo").value = "";
+            document.getElementById("descricao").value = "";
+            document.getElementById("data").value = "";
+        }
+
+        function removerTarefa(index) {
+            database.ref('tarefas').once('value').then((snapshot) => {
+                let tarefas = snapshot.val() || [];
+                let key = Object.keys(tarefas)[index];
+                database.ref('tarefas/' + key).remove();
             });
         }
 
-        // Função para remover uma tarefa
-        function removerTarefa(id) {
-            db.collection("tarefas").doc(id).delete().then(() => {
-                carregarTarefas();
-            }).catch((error) => {
-                console.error("Erro ao remover tarefa: ", error);
-            });
-        }
-
-        // Carregar as tarefas quando a página carregar
         document.addEventListener("DOMContentLoaded", carregarTarefas);
     </script>
-
 </body>
 </html>
