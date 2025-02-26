@@ -3,166 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diário Virtual da Classe</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script>
-        // Configuração do Supabase
-        const supabaseUrl = 'https://xyzcompany.supabase.co';  // Substitua pelo seu URL do Supabase
-        const supabaseKey = 'public-anon-key';  // Substitua pela sua chave pública
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        // Função para carregar os posts do Supabase
-        async function loadPosts() {
-            const { data: posts, error } = await supabase
-                .from('posts')
-                .select('id, content')
-                .order('id', { ascending: false });
-
-            const postList = document.getElementById('postList');
-            postList.innerHTML = ''; // Limpa a lista antes de adicionar os posts
-
-            if (error) {
-                console.error('Erro ao carregar os posts:', error);
-                return;
-            }
-
-            posts.forEach(post => {
-                addPostToDOM(post.id, post.content);
-            });
-        }
-
-        // Função para adicionar um post ao DOM
-        function addPostToDOM(postId, content) {
-            const postList = document.getElementById('postList');
-            const newPost = document.createElement('div');
-            newPost.classList.add('post');
-
-            const postText = document.createElement('span');
-            postText.textContent = content;
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Excluir';
-            deleteButton.classList.add('delete-button');
-            deleteButton.onclick = function() {
-                deletePost(postId);
-                postList.removeChild(newPost);
-            };
-
-            newPost.appendChild(postText);
-            newPost.appendChild(deleteButton);
-            postList.prepend(newPost);
-        }
-
-        // Função para adicionar um novo post
-        async function addPost() {
-            const postContent = document.getElementById('postContent').value;
-            if (postContent.trim() === '') {
-                alert('Por favor, escreva algo antes de postar.');
-                return;
-            }
-
-            const { data, error } = await supabase
-                .from('posts')
-                .insert([{ content: postContent }]);
-
-            if (error) {
-                console.error('Erro ao adicionar o post:', error);
-                return;
-            }
-
-            document.getElementById('postContent').value = ''; // Limpa o campo de texto
-            loadPosts(); // Recarrega os posts
-        }
-
-        // Função para excluir um post
-        async function deletePost(postId) {
-            const { data, error } = await supabase
-                .from('posts')
-                .delete()
-                .eq('id', postId);
-
-            if (error) {
-                console.error('Erro ao excluir o post:', error);
-                return;
-            }
-
-            loadPosts(); // Recarrega os posts
-        }
-
-        // Carrega os posts ao iniciar a página
-        loadPosts();
-    </script>
+    <title>Atividades 1º Ano B</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        #postForm {
-            margin-bottom: 20px;
-        }
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        #posts {
-            border: 1px solid #ccc;
-            padding: 10px;
-            background: #fff;
-            border-radius: 5px;
-        }
-        .post {
-            border-bottom: 1px solid #eee;
-            padding: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .delete-button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .delete-button:hover {
-            background-color: #c82333;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #activities { margin-top: 20px; }
+        .activity { border: 1px solid #ccc; padding: 10px; margin: 10px; }
     </style>
 </head>
 <body>
+    <h1>Atividades do 1º Ano B</h1>
+    <input type="text" id="title" placeholder="Título da Atividade">
+    <input type="text" id="description" placeholder="Descrição">
+    <input type="date" id="date">
+    <button onclick="addActivity()">Adicionar Atividade</button>
+    
+    <div id="activities"></div>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
+            authDomain: "diario-escolar-97964.firebaseapp.com",
+            databaseURL: "https://diario-escolar-97964-default-rtdb.firebaseio.com",
+            projectId: "diario-escolar-97964",
+            storageBucket: "diario-escolar-97964.firebasestorage.app",
+            messagingSenderId: "720716760516",
+            appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
+        };
 
-    <h1>Diário Virtual da Classe</h1>
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    <div id="postForm">
-        <textarea id="postContent" rows="4" placeholder="Escreva seu trabalho ou atividade aqui..."></textarea><br>
-        <button onclick="addPost()">Postar</button>
-    </div>
+        function addActivity() {
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            const date = document.getElementById("date").value;
+            
+            if (title && description && date) {
+                const newActivityRef = db.ref("activities").push();
+                newActivityRef.set({ title, description, date });
+            }
+        }
 
-    <div id="posts">
-        <h2>Posts:</h2>
-        <div id="postList"></div>
-    </div>
-
+        db.ref("activities").on("value", (snapshot) => {
+            const activitiesDiv = document.getElementById("activities");
+            activitiesDiv.innerHTML = "";
+            snapshot.forEach((childSnapshot) => {
+                const activity = childSnapshot.val();
+                activitiesDiv.innerHTML += `<div class='activity'><h3>${activity.title}</h3><p>${activity.description}</p><small>${activity.date}</small></div>`;
+            });
+        });
+    </script>
 </body>
 </html>
