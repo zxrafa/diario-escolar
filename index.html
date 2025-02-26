@@ -13,6 +13,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
             authDomain: "diario-escolar-97964.firebaseapp.com",
+            databaseURL: "https://diario-escolar-97964-default-rtdb.firebaseio.com/",
             projectId: "diario-escolar-97964",
             storageBucket: "diario-escolar-97964.appspot.com",
             messagingSenderId: "720716760516",
@@ -123,4 +124,38 @@
             border-radius: 5px;
         }
         .post {
-            border-bottom: 1px solid
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Diário Virtual da Classe</h1>
+
+    <div id="postForm">
+        <textarea id="postContent" rows="4" placeholder="Escreva seu trabalho ou atividade aqui..."></textarea><br>
+        <button onclick="addPost()">Postar</button>
+    </div>
+
+    <div id="posts">
+        <h2>Posts:</h2>
+        <div id="postList"></div>
+    </div>
+
+</body>
+</html>
