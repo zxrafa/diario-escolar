@@ -3,134 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diário Escolar Virtual - 1º B</title>
+    <title>Diário Escolar</title>
     <style>
         body {
-            background-color: #121212;
-            color: white;
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            text-align: center;
+            background-color: #2d2d2d;
+            color: #f1f1f1;
         }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        textarea {
+        textarea, input, button {
             width: 80%;
-            height: 100px;
-            border: none;
+            margin: 10px 0;
             padding: 10px;
-            background-color: #333;
-            color: white;
-            border-radius: 5px;
+            font-size: 16px;
         }
         button {
-            background-color: #6200ea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 10px;
+            background-color: #444;
+            color: #fff;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #3700b3;
+            background-color: #555;
         }
-        ul {
+        #notas {
+            margin-top: 20px;
             list-style: none;
             padding: 0;
-            margin-top: 30px;
-            width: 80%;
         }
         li {
-            background-color: #333;
+            background: #444;
             padding: 10px;
             margin: 5px 0;
-            border-radius: 5px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <h1>Diário Escolar Virtual - 1º B</h1>
-    <textarea id="entrada" placeholder="Digite sua anotação..."></textarea>
-    <br />
-    <button onclick="salvarEntrada()">Salvar</button>
-    <h2>Anotações:</h2>
-    <ul id="lista"></ul>
+    <h1>Diário Escolar Virtual</h1>
     
-    <script>
-        const GITHUB_REPO = "zxrafa/diario-escolar"; // Nome do repositório
-        const GITHUB_TOKEN = "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"; // Substitua com seu token de acesso pessoal
-        const FILE_PATH = "diario.json"; // Caminho para o arquivo JSON na raiz do repositório
+    <!-- Formulário de Entrada -->
+    <input type="text" id="materia" placeholder="Digite a matéria">
+    <textarea id="descricao" placeholder="Digite a descrição"></textarea>
+    <input type="date" id="data" placeholder="Digite a data">
+    <button onclick="salvarEntrada()">Salvar Anotação</button>
+    
+    <h2>Anotações</h2>
+    <ul id="notas"></ul>
 
-        // Função para buscar as entradas do diário
-        async function buscarEntradas() {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${FILE_PATH}`);
-            if (!response.ok) return [];
-            const data = await response.json();
-            return JSON.parse(atob(data.content));
+    <script>
+        // Função para salvar a anotação no GitHub
+        async function salvarEntrada() {
+            const materia = document.getElementById("materia").value;
+            const descricao = document.getElementById("descricao").value;
+            const data = document.getElementById("data").value;
+
+            if (!materia || !descricao || !data) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+
+            const novaAnotacao = `${materia}\n${descricao}\n${data}\n`;
+
+            // Salvar a anotação no arquivo de texto
+            await enviarParaGitHub(novaAnotacao);
         }
 
-        // Função para salvar uma nova entrada
-        async function salvarEntrada() {
-            let entrada = document.getElementById("entrada").value;
-            if (!entrada) return;
+        // Função para enviar as anotações para o repositório do GitHub
+        async function enviarParaGitHub(novaAnotacao) {
+            // URL do seu repositório no GitHub
+            const repositorio = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/dados.txt"; // Substitua pelo seu repositório
+            const response = await fetch(repositorio);
+            const textoAtual = await response.text();
 
-            let entradas = await buscarEntradas();
-            entradas.push(entrada);
+            const novoConteudo = textoAtual + novaAnotacao;
 
-            const fileContent = btoa(JSON.stringify(entradas, null, 2));
-            const sha = await pegarSHA();
-
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${FILE_PATH}`, {
-                method: "PUT",
+            const resposta = await fetch('https://api.github.com/repos/SEU_USUARIO/SEU_REPOSITORIO/contents/dados.txt', {
+                method: 'PUT',
                 headers: {
-                    "Authorization": `token ${GITHUB_TOKEN}`,
-                    "Content-Type": "application/json"
+                    'Authorization': 'token SEU_TOKEN', // Adicione seu token de autenticação
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: "Adicionando nova entrada ao diário",
-                    content: fileContent,
-                    sha: sha
+                    message: "Adicionando nova anotação",
+                    content: btoa(novoConteudo), // Codifica o conteúdo em base64
+                    sha: await obterShaAtual() // Função para obter o SHA atual do arquivo
                 })
             });
 
-            if (response.ok) {
-                exibirEntradas();
+            if (resposta.ok) {
+                alert("Anotação salva com sucesso!");
+                carregarNotas(); // Atualiza as anotações na tela
             } else {
-                alert("Erro ao salvar entrada");
+                alert("Erro ao salvar a anotação!");
             }
         }
 
-        // Função para pegar o SHA do arquivo atual (necessário para edição)
-        async function pegarSHA() {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${FILE_PATH}`);
-            if (!response.ok) return null;
+        // Função para obter o SHA atual do arquivo (necessário para atualizar o arquivo no GitHub)
+        async function obterShaAtual() {
+            const response = await fetch('https://api.github.com/repos/SEU_USUARIO/SEU_REPOSITORIO/contents/dados.txt');
             const data = await response.json();
             return data.sha;
         }
 
-        // Função para exibir as entradas no site
-        async function exibirEntradas() {
-            let lista = document.getElementById("lista");
-            lista.innerHTML = "";
-            let entradas = await buscarEntradas();
-            entradas.forEach((item) => {
-                let li = document.createElement("li");
-                li.textContent = item;
-                lista.appendChild(li);
-            });
+        // Função para carregar as anotações do GitHub
+        async function carregarNotas() {
+            const repositorio = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/dados.txt"; // Substitua pelo seu repositório
+            const response = await fetch(repositorio);
+            const texto = await response.text();
+
+            const notas = texto.split('\n').map((linha, index) => {
+                if (index % 3 === 0) { // Adiciona o conteúdo em 3 linhas
+                    return `
+                        <li>
+                            <strong>Matéria:</strong> ${linha}<br>
+                            <strong>Descrição:</strong> ${texto.split('\n')[index + 1]}<br>
+                            <strong>Data:</strong> ${texto.split('\n')[index + 2]}<br>
+                        </li>
+                    `;
+                }
+            }).join('');
+
+            document.getElementById('notas').innerHTML = notas;
         }
 
-        // Carregar as entradas quando a página for carregada
-        exibirEntradas();
+        // Carrega as notas assim que a página for carregada
+        window.onload = carregarNotas;
     </script>
 </body>
 </html>
