@@ -4,6 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diário Virtual da Classe</title>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
+            authDomain: "diario-escolar-97964.firebaseapp.com",
+            projectId: "diario-escolar-97964",
+            storageBucket: "diario-escolar-97964.appspot.com",
+            messagingSenderId: "720716760516",
+            appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Função para carregar os posts do Firebase
+        function loadPosts() {
+            const postList = document.getElementById('postList');
+            const postsRef = ref(database, 'posts');
+            onValue(postsRef, (snapshot) => {
+                postList.innerHTML = ''; // Limpa a lista antes de adicionar os posts
+                snapshot.forEach((childSnapshot) => {
+                    const post = childSnapshot.val();
+                    const postId = childSnapshot.key;
+                    addPostToDOM(postId, post.content);
+                });
+            });
+        }
+
+        // Função para adicionar um post ao DOM
+        function addPostToDOM(postId, content) {
+            const postList = document.getElementById('postList');
+            const newPost = document.createElement('div');
+            newPost.classList.add('post');
+
+            const postText = document.createElement('span');
+            postText.textContent = content;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Excluir';
+            deleteButton.classList.add('delete-button');
+            deleteButton.onclick = function() {
+                deletePost(postId);
+                postList.removeChild(newPost);
+            };
+
+            newPost.appendChild(postText);
+            newPost.appendChild(deleteButton);
+            postList.prepend(newPost);
+        }
+
+        // Função para adicionar um novo post
+        function addPost() {
+            const postContent = document.getElementById('postContent').value;
+            if (postContent.trim() === '') {
+                alert('Por favor, escreva algo antes de postar.');
+                return;
+            }
+
+            const postsRef = ref(database, 'posts/' + Date.now());
+            set(postsRef, {
+                content: postContent
+            });
+
+            document.getElementById('postContent').value = ''; // Limpa o campo de texto
+        }
+
+        // Função para excluir um post
+        function deletePost(postId) {
+            const postRef = ref(database, 'posts/' + postId);
+            remove(postRef);
+        }
+
+        // Carrega os posts ao iniciar a página
+        loadPosts();
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,97 +123,4 @@
             border-radius: 5px;
         }
         .post {
-            border-bottom: 1px solid #eee;
-            padding: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .delete-button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .delete-button:hover {
-            background-color: #c82333;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Diário Virtual da Classe</h1>
-
-    <div id="postForm">
-        <textarea id="postContent" rows="4" placeholder="Escreva seu trabalho ou atividade aqui..."></textarea><br>
-        <button onclick="addPost()">Postar</button>
-    </div>
-
-    <div id="posts">
-        <h2>Posts:</h2>
-        <div id="postList"></div>
-    </div>
-
-    <script>
-        // Função para carregar os posts do Local Storage
-        function loadPosts() {
-            const posts = JSON.parse(localStorage.getItem('posts')) || [];
-            posts.forEach(post => {
-                addPostToDOM(post);
-            });
-        }
-
-        // Função para adicionar um post ao DOM
-        function addPostToDOM(post) {
-            const postList = document.getElementById('postList');
-            const newPost = document.createElement('div');
-            newPost.classList.add('post');
-
-            const postText = document.createElement('span');
-            postText.textContent = post.content;
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Excluir';
-            deleteButton.classList.add('delete-button');
-            deleteButton.onclick = function() {
-                deletePost(post.id);
-                postList.removeChild(newPost);
-            };
-
-            newPost.appendChild(postText);
-            newPost.appendChild(deleteButton);
-            postList.prepend(newPost);
-        }
-
-        // Função para adicionar um novo post
-        function addPost() {
-            const postContent = document.getElementById('postContent').value;
-            if (postContent.trim() === '') {
-                alert('Por favor, escreva algo antes de postar.');
-                return;
-            }
-
-            const posts = JSON.parse(localStorage.getItem('posts')) || [];
-            const newPost = { id: Date.now(), content: postContent };
-            posts.push(newPost);
-            localStorage.setItem('posts', JSON.stringify(posts));
-
-            addPostToDOM(newPost);
-            document.getElementById('postContent').value = ''; // Limpa o campo de texto
-        }
-
-        // Função para excluir um post
-        function deletePost(id) {
-            let posts = JSON.parse(localStorage.getItem('posts')) || [];
-            posts = posts.filter(post => post.id !== id);
-            localStorage.setItem('posts', JSON.stringify(posts));
-        }
-
-        // Carrega os posts ao iniciar a página
-        loadPosts();
-    </script>
-
-</body>
-</html>
+            border-bottom: 1px solid
