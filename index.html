@@ -71,13 +71,13 @@
         // Função para enviar as anotações para o repositório do GitHub
         async function enviarParaGitHub(novaAnotacao) {
             // URL do seu repositório no GitHub
-            const repositorio = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/dados.txt"; // Substitua pelo seu repositório
+            const repositorio = "https://raw.githubusercontent.com/zxrafa/diario-escolar/main/dados.txt"; // Substitua pelo seu repositório
             const response = await fetch(repositorio);
             const textoAtual = await response.text();
 
             const novoConteudo = textoAtual + novaAnotacao;
 
-            const resposta = await fetch('https://api.github.com/repos/SEU_USUARIO/SEU_REPOSITORIO/contents/dados.txt', {
+            const resposta = await fetch('https://api.github.com/repos/zxrafa/diario-escolar/main/dados.txt', {
                 method: 'PUT',
                 headers: {
                     'Authorization': 'token SEU_TOKEN', // Adicione seu token de autenticação
