@@ -1,7 +1,5 @@
-// Diário Escolar Virtual - Versão Simples (Só Front-End)
-// Funciona apenas com GitHub Pages, sem backend!
-
-// Criar um arquivo index.html com este código:
+// Diário Escolar Virtual - Com GitHub como Banco de Dados
+// Armazena as anotações em um arquivo JSON no próprio repositório!
 
 <!DOCTYPE html>
 <html lang="pt">
@@ -25,25 +23,57 @@
     <h2>Anotações:</h2>
     <ul id="lista"></ul>
     <script>
-        function salvarEntrada() {
+        const GITHUB_REPO = "zxrafa/diario-escolar"; // Substituir pelo repositório correto
+        const GITHUB_TOKEN = "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"; // Criar um token no GitHub
+        const FILE_PATH = "diario.json";
+
+        async function buscarEntradas() {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`);
+            if (!response.ok) return [];
+            const data = await response.json();
+            return JSON.parse(atob(data.content));
+        }
+
+        async function salvarEntrada() {
             let entrada = document.getElementById("entrada").value;
             if (!entrada) return;
-            let entradas = JSON.parse(localStorage.getItem("diario")) || [];
+            let entradas = await buscarEntradas();
             entradas.push(entrada);
-            localStorage.setItem("diario", JSON.stringify(entradas));
-            document.getElementById("entrada").value = "";
-            exibirEntradas();
+
+            const fileContent = btoa(JSON.stringify(entradas, null, 2));
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: "Atualizando diário",
+                    content: fileContent,
+                    sha: await pegarSHA()
+                })
+            });
+            if (response.ok) exibirEntradas();
         }
-        function exibirEntradas() {
+
+        async function pegarSHA() {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.sha;
+        }
+
+        async function exibirEntradas() {
             let lista = document.getElementById("lista");
             lista.innerHTML = "";
-            let entradas = JSON.parse(localStorage.getItem("diario")) || [];
-            entradas.forEach((item, index) => {
+            let entradas = await buscarEntradas();
+            entradas.forEach((item) => {
                 let li = document.createElement("li");
                 li.textContent = item;
                 lista.appendChild(li);
             });
         }
+
         exibirEntradas();
     </script>
 </body>
@@ -53,6 +83,6 @@
 // 1. Crie um repositório no GitHub
 // 2. Envie o arquivo index.html para o repositório
 // 3. Vá em "Settings" → "Pages" → Escolha a branch "main" e salve
-// 4. O link do site aparecerá na mesma página depois de alguns minutos!
-
-// Pronto! Agora qualquer um pode acessar o site e salvar anotações no próprio navegador.
+// 4. Crie um arquivo "diario.json" no repositório com [] (lista vazia)
+// 5. Gere um token de acesso no GitHub e cole no código (GITHUB_TOKEN)
+// 6. Pronto! Seu site salvará anotações no repositório!
