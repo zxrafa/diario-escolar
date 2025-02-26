@@ -4,9 +4,97 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Diário Virtual Escolar</title>
-  <!-- Firebase JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
+  <!-- Firebase JS SDK (versão modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js";
+
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
+      authDomain: "diario-escolar-97964.firebaseapp.com",
+      projectId: "diario-escolar-97964",
+      storageBucket: "diario-escolar-97964.firebasestorage.app",
+      messagingSenderId: "720716760516",
+      appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
+    };
+
+    // Inicializando o Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Função para adicionar atividade
+    window.adicionarAtividade = () => {
+      const titulo = document.getElementById('titulo').value;
+      const descricao = document.getElementById('descricao').value;
+      const dataEntrega = document.getElementById('dataEntrega').value;
+
+      if (titulo && descricao && dataEntrega) {
+        const novaAtividade = {
+          titulo: titulo,
+          descricao: descricao,
+          dataEntrega: dataEntrega
+        };
+
+        // Adicionando a nova atividade no Firebase
+        const atividadesRef = ref(db, 'atividades');
+        push(atividadesRef, novaAtividade)
+          .then(() => {
+            console.log('Atividade adicionada com sucesso!');
+            alert('Atividade adicionada com sucesso!');
+            limparCampos();
+          })
+          .catch((error) => {
+            console.log('Erro ao adicionar a atividade: ', error);
+            alert('Erro ao adicionar a atividade.');
+          });
+      } else {
+        alert('Por favor, preencha todos os campos.');
+      }
+    }
+
+    // Função para limpar os campos após adicionar a atividade
+    function limparCampos() {
+      document.getElementById('titulo').value = '';
+      document.getElementById('descricao').value = '';
+      document.getElementById('dataEntrega').value = '';
+    }
+
+    // Função para exibir atividades
+    window.mostrarAtividades = () => {
+      const atividadesRef = ref(db, 'atividades');
+      onChildAdded(atividadesRef, (snapshot) => {
+        const atividade = snapshot.val();
+        const atividadesContainer = document.getElementById('atividadesContainer');
+        
+        const atividadeDiv = document.createElement('div');
+        atividadeDiv.classList.add('entry');
+        atividadeDiv.innerHTML = `
+          <h3>${atividade.titulo}</h3>
+          <p>${atividade.descricao}</p>
+          <p><strong>Data de entrega:</strong> ${atividade.dataEntrega}</p>
+        `;
+        
+        atividadesContainer.appendChild(atividadeDiv);
+      });
+    }
+
+    // Carregar atividades ao carregar a página
+    mostrarAtividades();
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Diário Virtual Escolar</h1>
+
+    <input type="text" id="titulo" placeholder="Título da atividade ou trabalho">
+    <textarea id="descricao" placeholder="Descrição da atividade ou trabalho"></textarea>
+    <input type="date" id="dataEntrega">
+    <button onclick="adicionarAtividade()">Adicionar Atividade</button>
+
+    <div id="atividadesContainer"></div>
+  </div>
 
   <style>
     body {
@@ -51,94 +139,6 @@
       border-radius: 4px;
     }
   </style>
-</head>
-<body>
-
-  <div class="container">
-    <h1>Diário Virtual Escolar</h1>
-
-    <input type="text" id="titulo" placeholder="Título da atividade ou trabalho">
-    <textarea id="descricao" placeholder="Descrição da atividade ou trabalho"></textarea>
-    <input type="date" id="dataEntrega">
-    <button onclick="adicionarAtividade()">Adicionar Atividade</button>
-
-    <div id="atividadesContainer"></div>
-  </div>
-
-  <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
-      authDomain: "diario-escolar-97964.firebaseapp.com",
-      projectId: "diario-escolar-97964",
-      storageBucket: "diario-escolar-97964.firebasestorage.app",
-      messagingSenderId: "720716760516",
-      appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
-    };
-
-    // Inicializando o Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();  // Inicialize o db após a inicialização do Firebase
-
-    // Função para adicionar atividade
-    function adicionarAtividade() {
-      const titulo = document.getElementById('titulo').value;
-      const descricao = document.getElementById('descricao').value;
-      const dataEntrega = document.getElementById('dataEntrega').value;
-
-      if (titulo && descricao && dataEntrega) {
-        const novaAtividade = {
-          titulo: titulo,
-          descricao: descricao,
-          dataEntrega: dataEntrega
-        };
-
-        // Adicionando a nova atividade no Firebase
-        const atividadesRef = db.ref('atividades');
-        atividadesRef.push(novaAtividade)
-          .then(() => {
-            console.log('Atividade adicionada com sucesso!');
-            alert('Atividade adicionada com sucesso!');
-            limparCampos();
-          })
-          .catch((error) => {
-            console.log('Erro ao adicionar a atividade: ', error);
-            alert('Erro ao adicionar a atividade.');
-          });
-      } else {
-        alert('Por favor, preencha todos os campos.');
-      }
-    }
-
-    // Função para limpar os campos após adicionar a atividade
-    function limparCampos() {
-      document.getElementById('titulo').value = '';
-      document.getElementById('descricao').value = '';
-      document.getElementById('dataEntrega').value = '';
-    }
-
-    // Função para exibir atividades
-    function mostrarAtividades() {
-      const atividadesRef = db.ref('atividades');
-      atividadesRef.on('child_added', (snapshot) => {
-        const atividade = snapshot.val();
-        const atividadesContainer = document.getElementById('atividadesContainer');
-        
-        const atividadeDiv = document.createElement('div');
-        atividadeDiv.classList.add('entry');
-        atividadeDiv.innerHTML = `
-          <h3>${atividade.titulo}</h3>
-          <p>${atividade.descricao}</p>
-          <p><strong>Data de entrega:</strong> ${atividade.dataEntrega}</p>
-        `;
-        
-        atividadesContainer.appendChild(atividadeDiv);
-      });
-    }
-
-    // Carregar atividades ao carregar a página
-    mostrarAtividades();
-  </script>
 
 </body>
 </html>
