@@ -26,6 +26,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
             authDomain: "diario-escolar-97964.firebaseapp.com",
@@ -40,17 +41,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Função para adicionar atividade
         function addActivity() {
             const title = document.getElementById("title").value;
             const description = document.getElementById("description").value;
             const date = document.getElementById("date").value;
-            
+
+            // Verifica se os campos estão preenchidos
             if (title && description && date) {
+                // Cria uma referência para atividades e adiciona uma nova
                 const newActivityRef = push(ref(db, 'activities'));
                 set(newActivityRef, {
                     title: title,
                     description: description,
                     date: date
+                }).then(() => {
+                    console.log('Atividade adicionada com sucesso!');
+                }).catch((error) => {
+                    console.error('Erro ao adicionar atividade:', error);
                 });
             }
         }
@@ -59,10 +67,15 @@
         const activitiesRef = ref(db, 'activities');
         onValue(activitiesRef, (snapshot) => {
             const activitiesDiv = document.getElementById("activities");
-            activitiesDiv.innerHTML = "";
+            activitiesDiv.innerHTML = "";  // Limpa as atividades antigas
+
             snapshot.forEach((childSnapshot) => {
                 const activity = childSnapshot.val();
-                activitiesDiv.innerHTML += `<div class='activity'><h3>${activity.title}</h3><p>${activity.description}</p><small>${activity.date}</small></div>`;
+                activitiesDiv.innerHTML += `<div class='activity'>
+                    <h3>${activity.title}</h3>
+                    <p>${activity.description}</p>
+                    <small>${activity.date}</small>
+                </div>`;
             });
         });
     </script>
