@@ -1,32 +1,58 @@
+// Diário Escolar Virtual - Versão Simples (Só Front-End)
+// Funciona apenas com GitHub Pages, sem backend!
+
+// Criar um arquivo index.html com este código:
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diário Escolar Virtual</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Diário Escolar - 1º B</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        textarea { width: 80%; height: 100px; }
+        button { padding: 10px; margin-top: 10px; cursor: pointer; }
+        ul { list-style: none; padding: 0; }
+        li { background: #f3f3f3; padding: 10px; margin: 5px 0; }
+    </style>
 </head>
 <body>
-    <h1>Diário Escolar</h1>
-    
-    <form id="form-tarefa">
-        <label for="materia">Matéria:</label>
-        <input type="text" id="materia" required><br><br>
-
-        <label for="descricao">Descrição:</label>
-        <textarea id="descricao" required></textarea><br><br>
-
-        <label for="data">Data:</label>
-        <input type="date" id="data" required><br><br>
-
-        <button type="submit">Adicionar</button>
-    </form>
-
-    <h2>Atividades</h2>
-    <ul id="tarefas-lista"></ul>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <script src="script.js"></script>
+    <h1>Diário Escolar Virtual - 1º B</h1>
+    <textarea id="entrada" placeholder="Digite sua anotação..."></textarea>
+    <br />
+    <button onclick="salvarEntrada()">Salvar</button>
+    <h2>Anotações:</h2>
+    <ul id="lista"></ul>
+    <script>
+        function salvarEntrada() {
+            let entrada = document.getElementById("entrada").value;
+            if (!entrada) return;
+            let entradas = JSON.parse(localStorage.getItem("diario")) || [];
+            entradas.push(entrada);
+            localStorage.setItem("diario", JSON.stringify(entradas));
+            document.getElementById("entrada").value = "";
+            exibirEntradas();
+        }
+        function exibirEntradas() {
+            let lista = document.getElementById("lista");
+            lista.innerHTML = "";
+            let entradas = JSON.parse(localStorage.getItem("diario")) || [];
+            entradas.forEach((item, index) => {
+                let li = document.createElement("li");
+                li.textContent = item;
+                lista.appendChild(li);
+            });
+        }
+        exibirEntradas();
+    </script>
 </body>
 </html>
+
+// Como publicar no GitHub Pages:
+// 1. Crie um repositório no GitHub
+// 2. Envie o arquivo index.html para o repositório
+// 3. Vá em "Settings" → "Pages" → Escolha a branch "main" e salve
+// 4. O link do site aparecerá na mesma página depois de alguns minutos!
+
+// Pronto! Agora qualquer um pode acessar o site e salvar anotações no próprio navegador.
