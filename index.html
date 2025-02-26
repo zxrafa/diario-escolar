@@ -1,104 +1,139 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diário Virtual</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <title>Diário Virtual da Classe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #postForm {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #posts {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+        }
+        .post {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Diário Virtual</h1>
-        <button id="add-activity-btn" class="btn btn-primary">Adicionar Atividade</button>
-        <div id="activities-container"></div>
+
+    <h1>Diário Virtual da Classe</h1>
+
+    <div id="postForm">
+        <textarea id="postContent" rows="4" placeholder="Escreva seu trabalho ou atividade aqui..."></textarea><br>
+        <button onclick="addPost()">Postar</button>
     </div>
 
-    <!-- Modal para adicionar atividade -->
-    <div class="modal fade" id="add-activity-modal" tabindex="-1" role="dialog" aria-labelledby="add-activity-modal-label" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="add-activity-modal-label">Adicionar Atividade</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-activity-form">
-                        <div class="form-group">
-                            <label for="activity-title">Título da Atividade</label>
-                            <input type="text" class="form-control" id="activity-title" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="activity-description">Descrição da Atividade</label>
-                            <textarea class="form-control" id="activity-description" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Adicionar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <div id="posts">
+        <h2>Posts:</h2>
+        <div id="postList"></div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/firebase@8.2.1/firebase-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/firebase@8.2.1/firebase-firestore.js"></script>
 
     <script>
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
-            authDomain: "diario-escolar-97964.firebaseapp.com",
-            projectId: "diario-escolar-97964",
-            storageBucket: "diario-escolar-97964.firebasestorage.app",
-            messagingSenderId: "720716760516",
-            appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
-        };
-
-        // Inicialização do Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Referência ao Firestore
-        const db = firebase.firestore();
-
-        // Função para adicionar atividade
-        function addActivity(title, description) {
-            db.collection("activities").add({
-                title: title,
-                description: description
-            })
-            .then((docRef) => {
-                console.log("Atividade adicionada com sucesso!");
-            })
-            .catch((error) => {
-                console.error("Erro ao adicionar atividade: ", error);
+        // Função para carregar os posts do Local Storage
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.forEach(post => {
+                addPostToDOM(post);
             });
         }
 
-        // Função para exibir atividades
-        function displayActivities() {
-            db.collection("activities").get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const activity = doc.data();
-                    const activityHTML = `
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">${activity.title}</h5>
-                                <p class="card-text">${activity.description}</p>
-                            </div>
-                        </div>
-                    `;
-                    $("#activities-container").append(activityHTML);
-                });
-            })
-            .catch((error) => {
-                console.error("Erro ao exibir atividades: ", error);
-            });
+        // Função para adicionar um post ao DOM
+        function addPostToDOM(post) {
+            const postList = document.getElementById('postList');
+            const newPost = document.createElement('div');
+            newPost.classList.add('post');
+
+            const postText = document.createElement('span');
+            postText.textContent = post.content;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Excluir';
+            deleteButton.classList.add('delete-button');
+            deleteButton.onclick = function() {
+                deletePost(post.id);
+                postList.removeChild(newPost);
+            };
+
+            newPost.appendChild(postText);
+            newPost.appendChild(deleteButton);
+            postList.prepend(newPost);
         }
 
-        // Evento para adicionar atividade
-        $("#add-activity-btn").click(() => {
-            $("#add-activity-modal").modal("show");
-        });
+        // Função para adicionar um novo post
+        function addPost() {
+            const postContent = document.getElementById('postContent').value;
+            if (postContent.trim() === '') {
+                alert('Por favor, escreva algo antes de postar.');
+                return;
+            }
+
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            const newPost = { id: Date.now(), content: postContent };
+            posts.push(newPost);
+            localStorage.setItem('posts', JSON.stringify(posts));
+
+            addPostToDOM(newPost);
+            document.getElementById('postContent').value = ''; // Limpa o campo de texto
+        }
+
+        // Função para excluir um post
+        function deletePost(id) {
+            let posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts = posts.filter(post => post.id !== id);
+            localStorage.setItem('posts', JSON.stringify(posts));
+        }
+
+        // Carrega os posts ao iniciar a página
+        loadPosts();
+    </script>
+
+</body>
+</html>
