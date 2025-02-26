@@ -67,12 +67,12 @@
     
     <script>
         const GITHUB_REPO = "zxrafa/diario-escolar"; // Nome do repositório
-        const GITHUB_TOKEN = "SEU_TOKEN_AQUI"; // Substitua com seu token de acesso pessoal
+        const GITHUB_TOKEN = "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"; // Substitua com seu token de acesso pessoal
         const FILE_PATH = "diario.json"; // Caminho para o arquivo JSON na raiz do repositório
 
         // Função para buscar as entradas do diário
         async function buscarEntradas() {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`);
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${FILE_PATH}`);
             if (!response.ok) return [];
             const data = await response.json();
             return JSON.parse(atob(data.content));
@@ -89,7 +89,7 @@
             const fileContent = btoa(JSON.stringify(entradas, null, 2));
             const sha = await pegarSHA();
 
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${FILE_PATH}`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `token ${GITHUB_TOKEN}`,
@@ -111,7 +111,7 @@
 
         // Função para pegar o SHA do arquivo atual (necessário para edição)
         async function pegarSHA() {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`);
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${FILE_PATH}`);
             if (!response.ok) return null;
             const data = await response.json();
             return data.sha;
