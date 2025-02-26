@@ -79,7 +79,6 @@
     </div>
 
     <script>
-        // 🔥 CONFIGURAÇÃO DO FIREBASE (substitua pelos seus dados)
         const firebaseConfig = {
             apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
             authDomain: "diario-escolar-97964.firebaseapp.com",
@@ -137,7 +136,9 @@
             });
         }
 
-        document.addEventListener("DOMContentLoaded", carregarTarefas);
+        document.addEventListener("DOMContentLoaded", function () {
+            setTimeout(carregarTarefas, 1000);
+        });
     </script>
 
 </body>
