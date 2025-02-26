@@ -79,23 +79,30 @@
     </div>
 
     <script>
+        // 🔥 CONFIGURAÇÃO DO FIREBASE (substitua pelos seus dados)
         const firebaseConfig = {
-            apiKey: "AIzaSyCKh8KhbZqVTNmiXqmhuGuyGfbNok6xZ2I",
-            authDomain: "diario-escolar-97964.firebaseapp.com",
-            projectId: "diario-escolar-97964",
-            storageBucket: "diario-escolar-97964.firebasestorage.app",
-            messagingSenderId: "720716760516",
-            appId: "1:720716760516:web:10a2a98b94c3d5dca1d091"
+            apiKey: "sua-chave",
+            authDomain: "seu-dominio.firebaseapp.com",
+            projectId: "seu-projeto-id",
+            storageBucket: "seu-bucket.appspot.com",
+            messagingSenderId: "seu-id-de-envio",
+            appId: "seu-id"
         };
 
+        // Inicializando o Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Função para carregar as tarefas
         function carregarTarefas() {
             let lista = document.getElementById("listaTarefas");
-            lista.innerHTML = "";
+            lista.innerHTML = ""; // Limpar a lista antes de exibir as novas tarefas
 
             db.collection("tarefas").get().then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    console.log("Nenhuma tarefa encontrada.");
+                }
+
                 querySnapshot.forEach((doc) => {
                     let tarefa = doc.data();
                     lista.innerHTML += `
@@ -109,9 +116,12 @@
                         </div>
                     `;
                 });
+            }).catch((error) => {
+                console.error("Erro ao carregar tarefas: ", error);
             });
         }
 
+        // Função para adicionar uma tarefa
         function adicionarTarefa() {
             let titulo = document.getElementById("titulo").value;
             let descricao = document.getElementById("descricao").value;
@@ -122,23 +132,29 @@
                 return;
             }
 
+            // Salvar a tarefa no Firebase
             db.collection("tarefas").add({ titulo, descricao, data }).then(() => {
+                console.log("Tarefa adicionada:", { titulo, descricao, data });
                 document.getElementById("titulo").value = "";
                 document.getElementById("descricao").value = "";
                 document.getElementById("data").value = "";
-                carregarTarefas();
+                carregarTarefas(); // Carregar as tarefas novamente após adicionar
+            }).catch((error) => {
+                console.error("Erro ao adicionar tarefa: ", error);
             });
         }
 
+        // Função para remover uma tarefa
         function removerTarefa(id) {
             db.collection("tarefas").doc(id).delete().then(() => {
                 carregarTarefas();
+            }).catch((error) => {
+                console.error("Erro ao remover tarefa: ", error);
             });
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
-            setTimeout(carregarTarefas, 1000);
-        });
+        // Carregar as tarefas quando a página carregar
+        document.addEventListener("DOMContentLoaded", carregarTarefas);
     </script>
 
 </body>
